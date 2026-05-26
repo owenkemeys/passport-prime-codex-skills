@@ -1,0 +1,7 @@
+interface:
+  display_name: "Passport Prime Apps On Windows"
+  short_description: "Build Passport Prime apps from Windows via VM"
+  default_prompt: "Use $foundation-passport-prime-windows-codex to set up a Windows/Codex workflow for building and simulator-testing a Passport Prime app."
+
+policy:
+  allow_implicit_invocation: true

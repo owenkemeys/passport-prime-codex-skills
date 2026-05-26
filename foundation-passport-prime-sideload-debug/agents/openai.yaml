@@ -1,0 +1,4 @@
+interface:
+  display_name: "Foundation Passport Prime Sideload Debug"
+  short_description: "Copy and debug Passport Prime app bundles"
+  default_prompt: "Use $foundation-passport-prime-sideload-debug to sideload a Passport Prime app and collect useful hardware-test evidence."

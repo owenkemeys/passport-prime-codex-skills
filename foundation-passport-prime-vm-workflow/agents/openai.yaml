@@ -1,0 +1,4 @@
+interface:
+  display_name: "Foundation Passport Prime VM Workflow"
+  short_description: "Run the Passport Prime SDK from a Linux VM"
+  default_prompt: "Use $foundation-passport-prime-vm-workflow to set up or operate a Linux VM for Foundation Passport Prime SDK work."

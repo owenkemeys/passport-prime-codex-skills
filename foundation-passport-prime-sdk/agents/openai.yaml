@@ -1,0 +1,4 @@
+interface:
+  display_name: "Foundation Passport Prime SDK"
+  short_description: "Build Passport Prime apps with the SDK"
+  default_prompt: "Use $foundation-passport-prime-sdk to scaffold, build, or debug a Passport Prime SDK app."
