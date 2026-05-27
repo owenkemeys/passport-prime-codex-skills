@@ -152,6 +152,7 @@ Prefer stable out-links for these GUI libraries, for example under `~/sim-libs`,
 
 For repeatable visual checks:
 
+- Leave the visible Weston/simulator window maximized or reviewer-friendly before handing the VM back to the user; do not leave it tiny after automation.
 - Start the simulator at `0.5x` scale if the Passport Prime buttons are partly off-screen.
 - Use the simulator control panel's own `Screenshot` button for clean Passport Prime screen captures; it writes numbered PNG files under the app's `screenshots/` directory.
 - For one-off checks, copy the newest screenshot to the host as a single overwritten `latest.png`.

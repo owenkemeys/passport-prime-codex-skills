@@ -104,6 +104,7 @@ Make the app testable without camera hardware:
 
 - Add a button such as `Sample QR` that cycles deterministic payloads.
 - Keep `Scan QR` for real scanner integration, but expect VM camera failure unless `/dev/video0` exists.
+- Before handing the VM back to a user for review, maximize or enlarge the visible Weston/simulator window so the full Passport Prime screen is visible.
 - Set the simulator control panel to `0.5x` scale so app buttons are clickable.
 - Use `xdotool` to click app buttons.
 - Use the simulator control panel's own Screenshot button for clean Passport Prime screen PNGs.
