@@ -152,12 +152,14 @@ Prefer stable out-links for these GUI libraries, for example under `~/sim-libs`,
 
 For repeatable visual checks:
 
+- Leave the visible Weston/simulator window maximized or reviewer-friendly before handing the VM back to the user; do not leave it tiny after automation.
 - Start the simulator at `0.5x` scale if the Passport Prime buttons are partly off-screen.
 - Use the simulator control panel's own `Screenshot` button for clean Passport Prime screen captures; it writes numbered PNG files under the app's `screenshots/` directory.
-- Copy the newest screenshot to the host as a single overwritten `latest.png`, then delete numbered screenshots in the VM to avoid clutter.
+- For one-off checks, copy the newest screenshot to the host as a single overwritten `latest.png`.
+- For review sessions where a user may take many captures, create a VM-visible shortcut/watcher for the app `screenshots/` folder and a Windows-side sync folder. Make the sync deletion-friendly so rejects deleted in Windows do not reappear from the VM.
 - If using `scrot` for full-desktop debugging, delete the target PNG first; observed `scrot` did not reliably overwrite an existing file.
 
-Keep VM disk hygiene in the loop. Nix can consume tens of GB after repeated builds and experiments. Safe cleanup candidates are reproducible app `target/` directories, `nix-collect-garbage -d`, and apt cache. Expect the first build after cleanup to redownload/rebuild toolchain pieces.
+Keep VM disk hygiene in the loop. Nix and Rust `target/` directories can consume tens of GB after repeated builds and experiments, and disk exhaustion can look like a simulator or memory crash. Check `df -h /` and `free -h` before and after long build/simulator sessions. Safe cleanup candidates are reproducible app `target/` directories, `nix-collect-garbage -d`, and apt cache. Preserve a small runnable bundle first if useful, path-check cleanup targets before `rm -rf`, and expect the first build after cleanup to redownload/rebuild toolchain pieces. If free disk drops below 10 GB, clean build/cache output before continuing.
 
 Known VM simulator signals:
 

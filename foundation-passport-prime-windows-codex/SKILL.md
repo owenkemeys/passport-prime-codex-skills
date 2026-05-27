@@ -11,7 +11,8 @@ Use this skill when a user on Windows wants Codex to start building Passport Pri
 
 - Browse fresh Foundation docs if the task depends on current SDK behavior.
 - Prefer a Linux VM over WSL for simulator, USB, and repeatable SDK work.
-- Keep the user out of terminal details where possible. Produce visible artifacts: simulator screenshots, app builds, concise status docs.
+- Keep non-technical users out of terminal details where possible. Produce visible artifacts: a visible VM/simulator window, Windows-accessible simulator captures, app builds, concise status docs.
+- Do not assume blanket permission to operate a user's VM. If the user grants it for the session, proceed without repeated permission chatter; otherwise keep VM operations explicit and reversible.
 - Do not claim hardware install works unless the public SDK/firmware path has been verified.
 - Keep local paths, usernames, SSH keys, and device-specific details out of reusable reports.
 
@@ -50,9 +51,10 @@ If hardware copy works but tapping `app.elf` does nothing:
 
 If Nix fills the VM disk:
 
-- Clean reproducible app `target/` directories.
+- Confirm with `df -h /` and `free -h`; apparent "memory" slowdowns are often disk exhaustion.
+- Preserve any needed small app bundle, then clean reproducible app `target/` directories.
 - Run `nix-collect-garbage -d`.
-- Expect the next build to redownload/rebuild toolchain pieces.
+- Expect the next build/simulator launch to redownload or rebuild toolchain pieces.
 
 ## Known Good Signals
 
@@ -91,5 +93,5 @@ Screenshot saved to <app>/screenshots/screenshot_N.png
 - Do not accept the Oracle VirtualBox Extension Pack license on the user's behalf.
 - Do not hard-code `/nix/store/...` GUI library paths without stable out-links; garbage collection can remove them.
 - Do not rely on full-desktop screenshots alone; use the simulator's Screenshot button for clean Passport Prime screen captures.
-- Delete or overwrite simulator screenshots after copying one `latest.png`; do not leave hundreds of numbered PNGs.
+- For screenshot-heavy review, mirror simulator captures to a normal Windows folder and make deletion-friendly sync state; do not leave hundreds of numbered captures only inside the VM.
 - Avoid complex PowerShell-to-SSH quoting. Put shell wrappers in the VM.

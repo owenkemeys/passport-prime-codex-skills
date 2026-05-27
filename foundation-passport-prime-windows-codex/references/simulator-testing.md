@@ -104,6 +104,7 @@ Make the app testable without camera hardware:
 
 - Add a button such as `Sample QR` that cycles deterministic payloads.
 - Keep `Scan QR` for real scanner integration, but expect VM camera failure unless `/dev/video0` exists.
+- Before handing the VM back to a user for review, maximize or enlarge the visible Weston/simulator window so the full Passport Prime screen is visible.
 - Set the simulator control panel to `0.5x` scale so app buttons are clickable.
 - Use `xdotool` to click app buttons.
 - Use the simulator control panel's own Screenshot button for clean Passport Prime screen PNGs.
@@ -131,6 +132,39 @@ For full-desktop debugging with `scrot`, remove the target first; observed `scro
 rm -f /tmp/prime-desktop.png
 DISPLAY=:0 scrot -q 90 /tmp/prime-desktop.png
 ```
+
+## Non-Technical Capture Review
+
+For users who will take many screenshots or recordings, do not make them ask for each file. Set up both:
+
+- A visible VM-side shortcut or watcher that shows the simulator capture directory, typically `<app>/screenshots`.
+- A Windows-side review folder populated by background sync, so captures can be opened, sorted, deleted, or moved from Explorer.
+
+VM-side helper pattern:
+
+```bash
+capture_dir="$HOME/path/to/app/screenshots"
+mkdir -p "$capture_dir" "$HOME/Desktop" "$HOME/bin"
+ln -sfn "$capture_dir" "$HOME/Desktop/<App> Simulator Captures"
+cat > "$HOME/bin/open-app-captures.sh" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+capture_dir="$HOME/path/to/app/screenshots"
+mkdir -p "$capture_dir"
+xterm -T "Simulator Captures" -geometry 120x32 \
+  -e "watch -n 1 'printf \"Simulator captures\n%s\n\n\" \"$capture_dir\"; ls -lhtr \"$capture_dir\" | tail -40'" &
+SCRIPT
+chmod +x "$HOME/bin/open-app-captures.sh"
+```
+
+Windows-side sync pattern:
+
+- Use `scp` over the VM SSH port to pull `*.png`, `*.gif`, `*.mp4`, and `*.webm`.
+- Track copied filename/size in a hidden state file so Windows deletions are respected. Without this, deleted rejects reappear on the next poll.
+- Create a `keepers/` folder in the Windows review folder for selected captures.
+- Avoid repeatedly recopying large recordings; copy only files that are new or changed by size.
+
+Keep simulator captures until the user has reviewed them, then clean VM-side rejects or archive only the keepers. For quick rough captures, Windows `Win+Shift+S` is acceptable, but the simulator Screenshot button produces cleaner device-only images.
 
 ## Expected Noisy Logs
 

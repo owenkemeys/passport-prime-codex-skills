@@ -65,18 +65,40 @@ If present, patch to the VM SDK path or regenerate the app scaffold.
 
 ## Disk Hygiene
 
-Nix can consume tens of GB after repeated SDK/simulator work. In one observed VM, `/nix/store` reached about 63 GB.
+Nix and Rust build outputs can consume tens of GB after repeated SDK/simulator work. In one observed VM, the user experienced simulator crashes and "memory-like" slowdown while `/` had only ~244 MB free; after removing reproducible build output, free space recovered to ~64 GB. Check disk before assuming an app or simulator memory leak.
 
-Safe cleanup candidates:
+Routine health check:
 
 ```bash
-rm -rf ~/path/to/app/target ~/path/to/core/target
+df -h /
+free -h
+find "$HOME" -maxdepth 5 -type d -name target -prune -exec du -sh {} + 2>/dev/null | sort -h
+```
+
+Safe cleanup candidates are reproducible build outputs and package caches, not source files or app data:
+
+```bash
+# Preserve a small runnable bundle first if it is useful for review/sideload.
+mkdir -p ~/project/bundles
+[ -d ~/project/app/target/keyos/<app-id> ] && cp -a ~/project/app/target/keyos/<app-id> ~/project/bundles/<app-id>-latest
+
+# Remove only path-checked target directories.
+for p in ~/project/app/target ~/project/core/target; do
+  resolved="$(realpath -m "$p")"
+  case "$resolved" in
+    "$HOME"/*/target|"$HOME"/*/*/target) [ -d "$resolved" ] && rm -rf -- "$resolved" ;;
+    *) echo "Refusing unsafe cleanup path: $resolved" >&2; exit 2 ;;
+  esac
+done
+
 nix-collect-garbage -d
-echo '<sudo-password>' | sudo -S apt-get clean
+sudo apt-get clean || true
 df -h /
 ```
 
-After cleanup, the next build may redownload/rebuild Rust, cross-compile, and simulator dependencies. Keep stable out-links for simulator GUI libraries before garbage collection.
+After cleanup, the next build may redownload/rebuild Rust, cross-compile, and simulator dependencies. Keep stable out-links for simulator GUI libraries before garbage collection. While actively reviewing a prototype, leave the fresh `target/` directory in place unless disk is low; deleting it after every build makes the next simulator launch slow.
+
+Recommended threshold: if free VM disk space drops below 10 GB, stop feature work and clean build/cache output first.
 
 ## VirtualBox Notes
 
