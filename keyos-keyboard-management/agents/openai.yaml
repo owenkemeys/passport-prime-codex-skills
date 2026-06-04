@@ -1,0 +1,6 @@
+interface:
+  display_name: "KeyOS Keyboard Management"
+  short_description: "Keyboard-safe KeyOS form behavior"
+  default_prompt: "Use $keyos-keyboard-management to review this KeyOS form for keyboard avoidance, focus, and dismissal behavior."
+policy:
+  allow_implicit_invocation: true

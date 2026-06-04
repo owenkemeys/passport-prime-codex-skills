@@ -1,0 +1,6 @@
+interface:
+  display_name: "KeyOS Secure App Architecture"
+  short_description: "Secure storage and protocol patterns"
+  default_prompt: "Use $keyos-secure-app-architecture to review this KeyOS app's storage, import, and approval architecture."
+policy:
+  allow_implicit_invocation: true

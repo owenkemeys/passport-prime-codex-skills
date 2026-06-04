@@ -105,3 +105,4 @@ Recommended threshold: if free VM disk space drops below 10 GB, stop feature wor
 - USB passthrough may work without Extension Pack for some devices.
 - If installing Extension Pack, Oracle presents a license. The user must review/accept it manually.
 - If Windows shows WSL I/O performance warnings for projects stored on Windows drives, prefer keeping active SDK work inside the Linux filesystem/VM.
+- If the visible simulator view is tiny, floating, partly off-screen, or surrounded by black unused VM space, fix the nested Weston/Openbox window first. VirtualBox does not position the Passport simulator directly; the stack is VirtualBox -> Ubuntu X/Openbox -> Weston -> Foundation simulator. Avoid `weston --fullscreen`; start Weston as a large normal window and maximize the Weston host window through Openbox/xdotool.

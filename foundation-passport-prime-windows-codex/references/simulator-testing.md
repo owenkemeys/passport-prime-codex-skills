@@ -4,6 +4,10 @@ Use this when making Passport Prime simulator testing visible and repeatable fro
 
 ## GUI Stack That Worked
 
+## Iteration Checkpoint
+
+For product/UI iterations, the simulator loop can be the slowest part of the work. Unless the user explicitly asks for a full build/run/test pass, make and describe the source edits first, then ask whether to continue with VM transfer, `foundation build`, simulator restart, screenshots, and cleanup. If the user already asked to run or test it, continue without a second checkpoint.
+
 Install a small display stack in Ubuntu:
 
 ```bash
@@ -19,11 +23,29 @@ Start nested Weston on X11:
 DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/1000 nohup weston \
   --backend=x11-backend.so \
   --socket=wayland-1 \
-  --width=900 \
-  --height=700 \
+  --width=1600 \
+  --height=900 \
   --idle-time=0 \
   > ~/weston.log 2>&1 &
 ```
+
+Do not use `weston --fullscreen` as the default handoff path. Weston is a normal X11/Openbox host window inside the VM. In this stack, fullscreen can leave a stale small compositor viewport inside a large black area, which looks like VirtualBox or the simulator is positioned off-screen. Start Weston as a large normal window, then maximize that Weston host window through Openbox, matching the user's manual maximize button:
+
+```bash
+weston_id="$(DISPLAY=:0 xdotool search --onlyvisible --class "Weston Compositor" | head -n 1 || true)"
+if [ -n "$weston_id" ]; then
+  eval "$(DISPLAY=:0 xdotool getwindowgeometry --shell "$weston_id")"
+  title_x=$((X + WIDTH / 2))
+  title_y=$((Y - 30))
+  [ "$title_y" -lt 10 ] && title_y=10
+  DISPLAY=:0 xdotool mousemove "$title_x" "$title_y" click --repeat 2 --delay 100 1
+  DISPLAY=:0 xprop -id "$weston_id" _NET_WM_STATE
+fi
+```
+
+Expected maximized state includes `_NET_WM_STATE_MAXIMIZED_VERT` and `_NET_WM_STATE_MAXIMIZED_HORZ`. If those are set and the Passport screen is still not usable, then inspect simulator scale/app layout.
+
+If the user reports that the simulator is partly off-screen, that the VM view is mostly black, or that Weston is floating in the middle of the VM, handle the Weston host window first. Do not change Passport simulator scale, theme, or app settings as a substitute for maximizing Weston. For helper/control windows, lower Weston after maximizing so controls remain reachable.
 
 ## Stable Nix GUI Libraries
 
@@ -79,16 +101,29 @@ idle-time=0
 
 [shell]
 locking=false
+background-color=0xff3a3a3a
 CFG
 
 DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/1000 nohup weston \
   --backend=x11-backend.so \
   --socket=wayland-1 \
-  --width=900 \
-  --height=700 \
+  --width=1600 \
+  --height=900 \
   --idle-time=0 \
   > "$HOME/weston.log" 2>&1 &
 sleep 2
+
+if command -v xdotool >/dev/null 2>&1; then
+  weston_id="$(DISPLAY=:0 xdotool search --onlyvisible --class "Weston Compositor" 2>/dev/null | head -n 1 || true)"
+  if [ -n "$weston_id" ]; then
+    eval "$(DISPLAY=:0 xdotool getwindowgeometry --shell "$weston_id")"
+    title_x=$((X + WIDTH / 2))
+    title_y=$((Y - 30))
+    [ "$title_y" -lt 10 ] && title_y=10
+    DISPLAY=:0 xdotool mousemove "$title_x" "$title_y" click --repeat 2 --delay 100 1
+    sleep 1
+  fi
+fi
 
 rm -f "$HOME/foundation-sim.log"
 source /etc/profile.d/nix.sh
@@ -98,13 +133,15 @@ nohup nix develop --command "$HOME/run-sim-visible.sh" \
 echo "$!" > "$HOME/foundation-sim.pid"
 ```
 
+After the target app process is detected, keep the successful build output warm during the review loop. For the next rebuild, do cleanup before starting the build: preserve a small signed bundle if needed, delete only path-checked rebuildable app `target/` output for the app being rebuilt, and use broad Nix garbage collection only when free space remains low and no other build/simulator lane is active.
+
 ## Visual Test Loop
 
 Make the app testable without camera hardware:
 
 - Add a button such as `Sample QR` that cycles deterministic payloads.
 - Keep `Scan QR` for real scanner integration, but expect VM camera failure unless `/dev/video0` exists.
-- Before handing the VM back to a user for review, maximize or enlarge the visible Weston/simulator window so the full Passport Prime screen is visible.
+- Before handing the VM back to a user for review, maximize the Weston host window through Openbox/xdotool so the full Passport Prime screen is visible.
 - Set the simulator control panel to `0.5x` scale so app buttons are clickable.
 - Use `xdotool` to click app buttons.
 - Use the simulator control panel's own Screenshot button for clean Passport Prime screen PNGs.
